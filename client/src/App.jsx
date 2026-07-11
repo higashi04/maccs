@@ -1,7 +1,7 @@
-import CreateUser from "./pages/User/CreateUser";
+import Modules from "./pages/Modules/Modules";
 
 function App() {
-  return <CreateUser />;
+  return <Modules />;
 }
 
 export default App;
