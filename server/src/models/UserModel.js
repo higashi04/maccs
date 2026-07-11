@@ -15,9 +15,9 @@ const UserSchema = new Schema({
         type: String,
         required: true
     },
-    modules: {
-        type: Array,
-        default: []
+    perfil: {
+        type: Schema.Types.ObjectId,
+        ref: "perfilesMGZ"
     },
     isAdmin: {
         type: Boolean,

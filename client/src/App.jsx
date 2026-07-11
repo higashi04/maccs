@@ -1,25 +1,7 @@
-import { useEffect, useState } from "react";
+import CreateUser from "./pages/User/CreateUser";
 
 function App() {
-  const [message, setMessage] = useState("Loading...");
-
-  useEffect(() => {
-    fetch("/api/hello")
-      .then((res) => res.json())
-      .then((data) => {
-        setMessage(data.message);
-      })
-      .catch((err) => {
-        console.error(err);
-        setMessage("Failed to connect backend");
-      });
-  }, []);
-
-  return (
-    <div>
-      <h1>{message}</h1>
-    </div>
-  );
+  return <CreateUser />;
 }
 
 export default App;
