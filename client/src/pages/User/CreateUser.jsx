@@ -64,7 +64,7 @@ function CreateUser() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-6">
+    <div className="flex items-center justify-center bg-gray-300 p-6">
       <div className="w-full max-w-xl bg-white rounded-2xl p-8 shadow-xl">
         <h2 className="mb-2 text-3xl font-semibold text-slate-900">Crear usuario</h2>
         <p className="mb-6 text-slate-500">Registra un nuevo usuario en el sistema.</p>
