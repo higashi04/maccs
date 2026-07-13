@@ -7,17 +7,19 @@ import cookieParser from 'cookie-parser';
 // routes
 import authRoutes from './routes/authRoutes.js';
 import modulesRoutes from './routes/modulesRoutes.js';
+import perfilesRoutes from './routes/perfilesRoutes.js';
 
 dotenv.config();
 
 const app = express();
 app.use(cookieParser());
 
-app.use(cors());
+app.use(cors({ origin: process.env.CLIENT_URL || "http://localhost:5173", credentials: true }));
 app.use(express.json());
 //* routes
 app.use("/api/auth", authRoutes);
 app.use("/api/modules", modulesRoutes);
+app.use("/api/perfiles", perfilesRoutes);
 
 mongoose.connect(process.env.MONGO_URL, {});
 

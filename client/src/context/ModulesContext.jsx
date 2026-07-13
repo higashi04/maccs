@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { apiFetch } from "../utils/api";
 
 const ModulesContext = createContext(null);
 
@@ -11,7 +12,7 @@ export function ModulesProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/modules/read");
+      const response = await apiFetch("/api/modules/read");
       if (!response.ok) {
         throw new Error("No se pudieron cargar los módulos");
       }

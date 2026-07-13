@@ -1,10 +1,25 @@
 import UserModel from "../models/UserModel.js";
 import bycrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  sameSite: "lax",
+  secure: process.env.NODE_ENV === "production",
+  maxAge: 24 * 60 * 60 * 1000,
+};
+
+const signToken = (user) =>
+  jwt.sign(
+    { id: user._id, isAdmin: user.isAdmin, perfil: user.perfil },
+    process.env.JWT_SECRET,
+    { expiresIn: process.env.JWT_EXPIRES || "1d" }
+  );
 
 const authController = {
   CreateUser: async (req, res) => {
     try {
-      const { username, email, password } = req.body;
+      const { username, email, password, perfil } = req.body;
       const userExists = await UserModel.findOne({ email });
 
       if (userExists) {
@@ -18,10 +33,55 @@ const authController = {
         username,
         email,
         password: hashPassword,
-        createdBy: "postman test",
+        perfil: perfil || undefined,
+        createdBy: req.user?.id || "postman test",
       });
 
-      res.status(201).json(newUser);
+      const { password: _password, ...safeUser } = newUser.toObject();
+      res.status(201).json(safeUser);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "server error" });
+    }
+  },
+
+  Login: async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      const user = await UserModel.findOne({ email });
+
+      if (!user) {
+        return res.status(401).json({ message: "Credenciales inválidas" });
+      }
+
+      const passwordMatches = await bycrypt.compare(password, user.password);
+      if (!passwordMatches) {
+        return res.status(401).json({ message: "Credenciales inválidas" });
+      }
+
+      const token = signToken(user);
+      res.cookie("token", token, COOKIE_OPTIONS);
+
+      const { password: _password, ...safeUser } = user.toObject();
+      res.status(200).json(safeUser);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "server error" });
+    }
+  },
+
+  Logout: (req, res) => {
+    res.clearCookie("token", { ...COOKIE_OPTIONS, maxAge: undefined });
+    res.status(200).json({ message: "Sesión cerrada" });
+  },
+
+  Me: async (req, res) => {
+    try {
+      const user = await UserModel.findById(req.user.id).select("-password");
+      if (!user) {
+        return res.status(401).json({ message: "No autenticado" });
+      }
+      res.status(200).json(user);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "server error" });

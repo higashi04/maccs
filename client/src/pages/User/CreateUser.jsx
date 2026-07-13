@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Select from "react-select";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faEye, faEyeSlash, faLock, faUser } from "@fortawesome/free-solid-svg-icons";
+import { apiFetch } from "../../utils/api";
 
 function CreateUser() {
   const [formData, setFormData] = useState({
@@ -8,15 +10,44 @@ function CreateUser() {
     email: "",
     password: "",
     confirmPassword: "",
+    perfil: null,
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [profiles, setProfiles] = useState([]);
+  const [loadingProfiles, setLoadingProfiles] = useState(true);
+
+  useEffect(() => {
+    const fetchProfiles = async () => {
+      try {
+        const response = await apiFetch("/api/perfiles/read");
+        if (!response.ok) throw new Error("No se pudieron cargar los perfiles");
+        const data = await response.json();
+        setProfiles(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoadingProfiles(false);
+      }
+    };
+
+    fetchProfiles();
+  }, []);
+
+  const profileOptions = profiles.map((profile) => ({
+    value: profile._id,
+    label: profile.nombrePerfil,
+  }));
 
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleProfileChange = (selectedOption) => {
+    setFormData((prev) => ({ ...prev, perfil: selectedOption ? selectedOption.value : null }));
   };
 
   const handleSubmit = async (event) => {
@@ -31,15 +62,13 @@ function CreateUser() {
     }
 
     try {
-      const response = await fetch("/api/auth/register", {
+      const response = await apiFetch("/api/auth/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify({
           username: formData.username,
           email: formData.email,
           password: formData.password,
+          perfil: formData.perfil,
         }),
       });
 
@@ -55,6 +84,7 @@ function CreateUser() {
         email: "",
         password: "",
         confirmPassword: "",
+        perfil: null,
       });
     } catch (error) {
       setMessage({ type: "error", text: error.message });
@@ -148,6 +178,25 @@ function CreateUser() {
                 <FontAwesomeIcon icon={showConfirmPassword ? faEyeSlash : faEye} />
               </button>
             </div>
+          </label>
+
+          <label className="flex flex-col gap-2 font-semibold text-slate-700">
+            Perfil
+            <Select
+              inputId="perfil"
+              name="perfil"
+              options={profileOptions}
+              value={profileOptions.find((option) => option.value === formData.perfil) || null}
+              onChange={handleProfileChange}
+              isLoading={loadingProfiles}
+              isClearable
+              placeholder="Selecciona un perfil"
+              noOptionsMessage={() => "No hay perfiles registrados"}
+              classNames={{
+                control: () =>
+                  "!rounded-lg !border-slate-300 !text-sm !shadow-none focus-within:!border-sky-500 focus-within:!ring-2 focus-within:!ring-sky-500",
+              }}
+            />
           </label>
 
           <button

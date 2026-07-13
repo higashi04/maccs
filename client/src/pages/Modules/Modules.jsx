@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { apiFetch } from "../../utils/api";
 
 function Modules() {
   const [formData, setFormData] = useState({
@@ -22,11 +23,8 @@ function Modules() {
     setMessage({ type: "", text: "" });
 
     try {
-      const response = await fetch("/api/modules/create", {
+      const response = await apiFetch("/api/modules/create", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(formData),
       });
 
