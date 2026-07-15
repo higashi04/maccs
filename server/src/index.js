@@ -8,6 +8,7 @@ import cookieParser from 'cookie-parser';
 import authRoutes from './routes/authRoutes.js';
 import modulesRoutes from './routes/modulesRoutes.js';
 import perfilesRoutes from './routes/perfilesRoutes.js';
+import jornalerosRoutes from './routes/jornalerosRoutes.js';
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/modules", modulesRoutes);
 app.use("/api/perfiles", perfilesRoutes);
+app.use("/api/jornaleros", jornalerosRoutes);
 
 mongoose.connect(process.env.MONGO_URL, {});
 

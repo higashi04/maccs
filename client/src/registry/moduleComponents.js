@@ -1,12 +1,16 @@
 import CreateUser from "../pages/User/CreateUser";
 import Modules from "../pages/Modules/Modules";
 import Profiles from "../pages/Profiles/Profiles";
+import JornalerosCatalaogue from "../pages/JornalerosCatalogue/JornalerosCatalogue";
+import JornalerosActivities from "../pages/JornaleroActivities/JornaleroActivities";
 
 // Add every page a module can point to here, keyed by component name.
 const moduleComponents = {
   CreateUser,
   Modules,
   Profiles,
+  JornalerosCatalaogue,
+  JornalerosActivities,
 };
 
 // Accepts either a plain key ("CreateUser") or a JSX-looking string
