@@ -89,18 +89,18 @@ const JornaleroActividadesSchema = new Schema({
         type: Number,
         default: 0
     },
-    prestamos: {
-        type: Number,
-        default: 0
-    },
-    prestamosPendientes: {
-        type: Number,
-        default: 0
-    },
-    extras: {
-        type: Number,
-        default: 0
-    },
+    // prestamos: {
+    //     type: Number,
+    //     default: 0
+    // },
+    // prestamosPendientes: {
+    //     type: Number,
+    //     default: 0
+    // },
+    // extras: {
+    //     type: Number,
+    //     default: 0
+    // },
     createdBy: String,
 }, {
     timestamps: true

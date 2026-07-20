@@ -8,5 +8,7 @@ router.post("/register", verifyToken, requireAdmin, authController.CreateUser);
 router.post("/login", authController.Login);
 router.post("/logout", authController.Logout);
 router.get("/me", verifyToken, authController.Me);
+router.post("/forgot-password", authController.ForgotPassword);
+router.post("/reset-password", authController.ResetPassword);
 
 export default router;
