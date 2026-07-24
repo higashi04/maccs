@@ -5,6 +5,7 @@
 
 # on frontend
 - keep each component on its separate file unless it's a very specific use case that will not be used anywhere else.
+- UI must be responsive and adaptable to every type of screen
 - keep api call functions on a separate file per module
 - use tailwind css to style components and fontawesome icons are avaliable to use
 - use JSDocs to document what each function does

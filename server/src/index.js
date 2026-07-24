@@ -9,6 +9,7 @@ import authRoutes from './routes/authRoutes.js';
 import modulesRoutes from './routes/modulesRoutes.js';
 import perfilesRoutes from './routes/perfilesRoutes.js';
 import jornalerosRoutes from './routes/jornalerosRoutes.js';
+import jornaleroActividadesRoutes from './routes/jornaleroActividadesRoutes.js';
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/modules", modulesRoutes);
 app.use("/api/perfiles", perfilesRoutes);
 app.use("/api/jornaleros", jornalerosRoutes);
+app.use("/api/jornalero-actividades", jornaleroActividadesRoutes);
 
 mongoose.connect(process.env.MONGO_URL, {});
 

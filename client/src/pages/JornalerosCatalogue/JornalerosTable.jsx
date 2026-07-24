@@ -12,6 +12,12 @@ import {
 import { deleteJornalero, updateJornalero } from "../../api/jornalerosApi";
 import ConfirmDialog from "../../components/ConfirmDialog";
 
+const formatCantidad = (cantidad) =>
+  Number(cantidad || 0).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
+
+const getTotalPrestamos = (jornalero) =>
+  (jornalero.prestamos || []).reduce((total, prestamo) => total + Number(prestamo.cantidad || 0), 0);
+
 /**
  * Tabla de jornaleros con acceso a edición, baja/reactivación y gestión de préstamos.
  * En pantallas pequeñas se muestra como una lista de tarjetas en vez de tabla.
@@ -219,6 +225,12 @@ const JornalerosTable = ({ jornaleros, loading, error, onManagePrestamos, onJorn
                         {jornalero.prestamos?.length || 0}
                       </span>
                     </p>
+                    <p className="text-sm text-slate-500">
+                      Total prestado:{" "}
+                      <span className="font-semibold text-slate-700">
+                        {formatCantidad(getTotalPrestamos(jornalero))}
+                      </span>
+                    </p>
                     {renderActions(jornalero)}
                   </div>
                 )}
@@ -234,6 +246,7 @@ const JornalerosTable = ({ jornaleros, loading, error, onManagePrestamos, onJorn
                   <th className="py-2 pr-4">Nombre</th>
                   <th className="py-2 pr-4">Estado</th>
                   <th className="py-2 pr-4">Préstamos pendientes</th>
+                  <th className="py-2 pr-4">Total prestado</th>
                   <th className="py-2 pr-4"></th>
                 </tr>
               </thead>
@@ -266,6 +279,9 @@ const JornalerosTable = ({ jornaleros, loading, error, onManagePrestamos, onJorn
                           </label>
                         </td>
                         <td className="py-2 pr-4 text-slate-600">{jornalero.prestamos?.length || 0}</td>
+                        <td className="py-2 pr-4 text-slate-600">
+                          {formatCantidad(getTotalPrestamos(jornalero))}
+                        </td>
                         <td className="py-2 pr-4">{renderEditActions(jornalero._id)}</td>
                       </>
                     ) : (
@@ -273,6 +289,9 @@ const JornalerosTable = ({ jornaleros, loading, error, onManagePrestamos, onJorn
                         <td className="py-2 pr-4 font-medium text-slate-800">{jornalero.nombre}</td>
                         <td className="py-2 pr-4">{statusBadge(jornalero.activo)}</td>
                         <td className="py-2 pr-4 text-slate-600">{jornalero.prestamos?.length || 0}</td>
+                        <td className="py-2 pr-4 text-slate-600">
+                          {formatCantidad(getTotalPrestamos(jornalero))}
+                        </td>
                         <td className="py-2 pr-4">{renderActions(jornalero)}</td>
                       </>
                     )}
