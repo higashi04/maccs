@@ -7,7 +7,6 @@ function Modules() {
     ruta: "",
     componente: "",
     icono: "",
-    createdBy: "",
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
@@ -43,7 +42,6 @@ function Modules() {
         ruta: "",
         componente: "",
         icono: "",
-        createdBy: "",
       });
     } catch (error) {
       setMessage({ type: "error", text: error.message });
@@ -113,19 +111,6 @@ function Modules() {
               />
             </label>
           </div>
-
-          <label className="flex flex-col gap-2 font-semibold text-slate-700">
-            Creado por
-            <input
-              name="createdBy"
-              type="text"
-              value={formData.createdBy}
-              onChange={handleChange}
-              required
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              placeholder="admin"
-            />
-          </label>
 
           <button
             type="submit"

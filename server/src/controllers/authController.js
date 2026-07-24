@@ -37,7 +37,7 @@ const authController = {
         email,
         password: hashPassword,
         perfil: perfil || undefined,
-        createdBy: req.user?.id || "postman test",
+        createdBy: req.user?.username || "postman test",
       });
 
       const { password: _password, ...safeUser } = newUser.toObject();
