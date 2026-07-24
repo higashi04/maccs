@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faHammer } from "@fortawesome/free-solid-svg-icons";
 import { requestPasswordReset } from "../../api/authApi";
 
 /**
@@ -28,9 +28,12 @@ function ForgotPassword() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-300 p-6">
-      <div className="w-full max-w-md bg-white rounded-2xl p-8 shadow-xl">
-        <h2 className="mb-2 text-3xl font-semibold text-slate-900">Recuperar contraseña</h2>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-slate-200 to-sky-100 p-4 sm:p-6">
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl shadow-slate-400/20 sm:p-8">
+        <span className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-sky-600 text-xl text-white shadow-lg shadow-sky-950/30">
+          <FontAwesomeIcon icon={faHammer} />
+        </span>
+        <h2 className="mb-2 text-2xl font-semibold text-slate-900 sm:text-3xl">Recuperar contraseña</h2>
         <p className="mb-6 text-slate-500">
           Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.
         </p>
@@ -55,7 +58,7 @@ function ForgotPassword() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 py-3 px-4 rounded-lg bg-sky-600 text-white font-bold hover:bg-sky-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition"
+            className="mt-2 rounded-lg bg-sky-600 px-4 py-3 font-bold text-white shadow-lg shadow-sky-950/20 transition hover:bg-sky-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
           >
             {loading ? "Enviando..." : "Enviar enlace"}
           </button>

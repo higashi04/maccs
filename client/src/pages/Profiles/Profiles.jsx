@@ -64,12 +64,11 @@ function Profiles() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="mx-auto flex w-full max-w-3xl flex-col rounded-2xl bg-white p-8 shadow-xl">
-        <h2 className="mb-2 text-3xl font-semibold text-slate-900">Crear perfil</h2>
-        <p className="mb-6 text-slate-500">
-          Define un perfil y los módulos a los que tendrán acceso los usuarios asignados a él.
-        </p>
+    <div className="mx-auto flex w-full max-w-3xl flex-col rounded-2xl bg-white p-6 shadow-xl shadow-slate-300/40 sm:p-8">
+      <h2 className="mb-2 text-2xl font-semibold text-slate-900 sm:text-3xl">Crear perfil</h2>
+      <p className="mb-6 text-slate-500">
+        Define un perfil y los módulos a los que tendrán acceso los usuarios asignados a él.
+      </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <label className="flex flex-col gap-2 font-semibold text-slate-700">
@@ -131,24 +130,23 @@ function Profiles() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 rounded-lg bg-sky-600 px-4 py-3 font-bold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+            className="mt-2 rounded-lg bg-sky-600 px-4 py-3 font-bold text-white shadow-lg shadow-sky-950/20 transition hover:bg-sky-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
           >
             {loading ? "Creando..." : "Crear perfil"}
           </button>
         </form>
 
-        {message.text ? (
-          <p
-            className={`mt-4 rounded-lg px-3 py-2 font-semibold ${
-              message.type === "error"
-                ? "bg-red-100 text-red-700"
-                : "bg-emerald-100 text-emerald-800"
-            }`}
-          >
-            {message.text}
-          </p>
-        ) : null}
-      </div>
+      {message.text ? (
+        <p
+          className={`mt-4 rounded-lg px-3 py-2 font-semibold ${
+            message.type === "error"
+              ? "bg-red-100 text-red-700"
+              : "bg-emerald-100 text-emerald-800"
+          }`}
+        >
+          {message.text}
+        </p>
+      ) : null}
     </div>
   );
 }

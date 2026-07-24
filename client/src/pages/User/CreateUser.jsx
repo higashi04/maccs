@@ -94,9 +94,9 @@ function CreateUser() {
   };
 
   return (
-    <div className="flex items-center justify-center bg-gray-300 p-6">
-      <div className="w-full max-w-xl bg-white rounded-2xl p-8 shadow-xl">
-        <h2 className="mb-2 text-3xl font-semibold text-slate-900">Crear usuario</h2>
+    <div className="flex items-center justify-center p-2 sm:p-4">
+      <div className="w-full max-w-xl rounded-2xl bg-white p-6 shadow-xl shadow-slate-300/40 sm:p-8">
+        <h2 className="mb-2 text-2xl font-semibold text-slate-900 sm:text-3xl">Crear usuario</h2>
         <p className="mb-6 text-slate-500">Registra un nuevo usuario en el sistema.</p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -202,7 +202,7 @@ function CreateUser() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 py-3 px-4 rounded-lg bg-sky-600 text-white font-bold hover:bg-sky-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition"
+            className="mt-2 rounded-lg bg-sky-600 px-4 py-3 font-bold text-white shadow-lg shadow-sky-950/20 transition hover:bg-sky-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
           >
             {loading ? "Creando..." : "Crear usuario"}
           </button>

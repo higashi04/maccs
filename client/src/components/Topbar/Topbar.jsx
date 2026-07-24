@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBars, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useModules } from "../../context/ModulesContext";
 import { useAuth } from "../../context/AuthContext";
 
@@ -9,7 +11,12 @@ const STATIC_TITLES = {
   "/profiles/create": "Crear perfil",
 };
 
-function Topbar() {
+/**
+ * Barra superior con el título de la sección activa, el acceso al menú
+ * móvil y las acciones de la sesión del usuario.
+ * @param {{ onMenuClick: () => void }} props
+ */
+function Topbar({ onMenuClick }) {
   const location = useLocation();
   const navigate = useNavigate();
   const { modules } = useModules();
@@ -26,17 +33,30 @@ function Topbar() {
   };
 
   return (
-    <header className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-6">
-      <h1 className="text-xl font-semibold text-slate-900">{heading}</h1>
+    <header className="sticky top-0 z-20 flex h-16 shrink-0 items-center justify-between gap-3 border-b border-slate-200 bg-white/80 px-4 backdrop-blur-sm sm:px-6">
+      <div className="flex min-w-0 items-center gap-3">
+        <button
+          type="button"
+          onClick={onMenuClick}
+          aria-label="Abrir menú"
+          className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-700 lg:hidden"
+        >
+          <FontAwesomeIcon icon={faBars} />
+        </button>
+        <h1 className="truncate text-lg font-semibold text-slate-900 sm:text-xl">{heading}</h1>
+      </div>
       {user ? (
-        <div className="flex items-center gap-4">
-          <span className="text-sm font-semibold text-slate-600">{user.username}</span>
+        <div className="flex items-center gap-2 sm:gap-4">
+          <span className="hidden text-sm font-semibold text-slate-600 sm:inline">
+            {user.username}
+          </span>
           <button
             type="button"
             onClick={handleLogout}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:px-3"
           >
-            Cerrar sesión
+            <FontAwesomeIcon icon={faRightFromBracket} />
+            <span className="hidden sm:inline">Cerrar sesión</span>
           </button>
         </div>
       ) : null}

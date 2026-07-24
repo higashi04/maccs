@@ -3,15 +3,16 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "client": "cd client && npm run dev",
-    "server": "cd server && npm run dev",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "client": "cd client && pnpm run dev",
+    "server": "cd server && pnpm run dev",
+    "dev": "concurrently \"pnpm run server\" \"pnpm run client\""
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "description": "",
+  "packageManager": "pnpm@10.34.5",
   "devDependencies": {
     "concurrently": "^9.2.1"
   }

@@ -43,8 +43,8 @@ const JornaleroForm = ({ onCreated }) => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col rounded-2xl bg-white p-8 shadow-xl">
-      <h2 className="mb-2 flex items-center gap-2 text-3xl font-semibold text-slate-900">
+    <div className="mx-auto flex w-full max-w-3xl flex-col rounded-2xl bg-white p-6 shadow-xl shadow-slate-300/40 sm:p-8">
+      <h2 className="mb-2 flex items-center gap-2 text-2xl font-semibold text-slate-900 sm:text-3xl">
         <FontAwesomeIcon icon={faUserPlus} className="text-sky-600" />
         Registrar jornalero
       </h2>
@@ -80,7 +80,7 @@ const JornaleroForm = ({ onCreated }) => {
         <button
           type="submit"
           disabled={submitting}
-          className="mt-2 rounded-lg bg-sky-600 px-4 py-3 font-bold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+          className="mt-2 rounded-lg bg-sky-600 px-4 py-3 font-bold text-white shadow-lg shadow-sky-950/20 transition hover:bg-sky-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
         >
           {submitting ? "Creando..." : "Crear jornalero"}
         </button>

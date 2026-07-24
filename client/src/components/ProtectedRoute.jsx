@@ -7,8 +7,8 @@ function ProtectedRoute() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-300">
-        <p className="text-slate-600 font-semibold">Cargando...</p>
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-100 via-slate-200 to-sky-100">
+        <p className="font-semibold text-slate-600">Cargando...</p>
       </div>
     );
   }

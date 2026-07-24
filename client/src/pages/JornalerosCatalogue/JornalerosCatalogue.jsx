@@ -58,14 +58,14 @@ const JornalerosCatalaogue = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6">
-      <div className="mx-auto flex w-full max-w-3xl gap-2 border-b border-slate-200">
+    <div>
+      <div className="mx-auto flex w-full max-w-3xl gap-1 overflow-x-auto border-b border-slate-200 sm:gap-2">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition ${
+            className={`flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-sm font-semibold transition sm:px-4 ${
               activeTab === tab.id
                 ? "border-sky-600 text-sky-600"
                 : "border-transparent text-slate-500 hover:text-slate-700"

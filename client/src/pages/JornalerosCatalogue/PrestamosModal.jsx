@@ -96,10 +96,10 @@ const PrestamosModal = ({ jornalero, onClose, onUpdated }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4">
-      <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl">
-        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
-          <h3 className="text-xl font-semibold text-slate-900">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-0 backdrop-blur-sm sm:p-4">
+      <div className="flex h-full w-full max-w-2xl flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[85vh] sm:rounded-2xl">
+        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-4 sm:px-6">
+          <h3 className="text-lg font-semibold text-slate-900 sm:text-xl">
             Préstamos de {jornalero.nombre}
           </h3>
           <button
@@ -111,9 +111,9 @@ const PrestamosModal = ({ jornalero, onClose, onUpdated }) => {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
           <form onSubmit={handleAddSubmit} className="mb-6 flex flex-wrap items-end gap-3">
-            <label className="flex flex-col gap-1 text-sm font-semibold text-slate-700">
+            <label className="flex flex-1 min-w-[140px] flex-col gap-1 text-sm font-semibold text-slate-700">
               Fecha
               <input
                 type="date"
@@ -125,7 +125,7 @@ const PrestamosModal = ({ jornalero, onClose, onUpdated }) => {
                 className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
               />
             </label>
-            <label className="flex flex-col gap-1 text-sm font-semibold text-slate-700">
+            <label className="flex flex-1 min-w-[120px] flex-col gap-1 text-sm font-semibold text-slate-700 sm:flex-none">
               Cantidad
               <input
                 type="number"
@@ -136,14 +136,14 @@ const PrestamosModal = ({ jornalero, onClose, onUpdated }) => {
                 onChange={(event) =>
                   setNewPrestamo((prev) => ({ ...prev, cantidad: event.target.value }))
                 }
-                className="w-32 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500 sm:w-32"
                 placeholder="0.00"
               />
             </label>
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-sky-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-sky-700 disabled:cursor-not-allowed disabled:bg-slate-300 sm:w-auto"
             >
               <FontAwesomeIcon icon={faPlus} />
               {submitting ? "Agregando..." : "Agregar préstamo"}
