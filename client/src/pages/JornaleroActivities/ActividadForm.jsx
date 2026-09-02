@@ -14,26 +14,38 @@ const camposIniciales = ACTIVIDADES_CAMPOS.reduce((acumulado, campo) => {
 
 const initialFormData = {
   jornalero: null,
+  ordenCompra: null,
   fecha: todayISO(),
   modelo: "",
   ...camposIniciales,
 };
 
+const selectClassNames = {
+  control: () =>
+    "!rounded-lg !border-slate-300 !text-sm !shadow-none focus-within:!border-sky-500 focus-within:!ring-2 focus-within:!ring-sky-500",
+};
+
 /**
- * Formulario para registrar el avance diario de actividades de un jornalero activo.
+ * Formulario para registrar el avance diario de actividades de un jornalero activo,
+ * ligado a una orden de compra.
  * @param {{
  *   jornaleroOptions: Array<{ value: string, label: string }>,
- *   loadingJornaleros: boolean,
+ *   ordenCompraOptions: Array<{ value: string, label: string }>,
+ *   loadingCatalogos: boolean,
  *   onCreated: (actividad: Object) => void,
  * }} props
  */
-const ActividadForm = ({ jornaleroOptions, loadingJornaleros, onCreated }) => {
+const ActividadForm = ({ jornaleroOptions, ordenCompraOptions, loadingCatalogos, onCreated }) => {
   const [formData, setFormData] = useState(initialFormData);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
 
   const handleJornaleroChange = (selectedOption) => {
     setFormData((prev) => ({ ...prev, jornalero: selectedOption ? selectedOption.value : null }));
+  };
+
+  const handleOrdenChange = (selectedOption) => {
+    setFormData((prev) => ({ ...prev, ordenCompra: selectedOption ? selectedOption.value : null }));
   };
 
   const handleChange = (event) => {
@@ -47,7 +59,11 @@ const ActividadForm = ({ jornaleroOptions, loadingJornaleros, onCreated }) => {
   };
 
   const resetForm = () => {
-    setFormData((prev) => ({ ...initialFormData, jornalero: prev.jornalero }));
+    setFormData((prev) => ({
+      ...initialFormData,
+      jornalero: prev.jornalero,
+      ordenCompra: prev.ordenCompra,
+    }));
   };
 
   const handleSubmit = async (event) => {
@@ -74,17 +90,17 @@ const ActividadForm = ({ jornaleroOptions, loadingJornaleros, onCreated }) => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col rounded-2xl bg-white p-6 shadow-xl shadow-slate-300/40 sm:p-8">
+    <div className="mx-auto flex w-full max-w-4xl flex-col rounded-2xl bg-white p-6 shadow-xl shadow-slate-300/40 sm:p-8 lg:max-w-5xl xl:max-w-6xl">
       <h2 className="mb-2 flex items-center gap-2 text-2xl font-semibold text-slate-900 sm:text-3xl">
         <FontAwesomeIcon icon={faClipboardList} className="text-sky-600" />
         Registrar actividades
       </h2>
       <p className="mb-6 text-slate-500">
-        Selecciona un jornalero activo y captura las actividades realizadas en el día.
+        Selecciona un jornalero activo y la orden de compra, luego captura las actividades del día.
       </p>
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <label className="flex flex-col gap-2 font-semibold text-slate-700">
             Jornalero
             <Select
@@ -93,14 +109,27 @@ const ActividadForm = ({ jornaleroOptions, loadingJornaleros, onCreated }) => {
               options={jornaleroOptions}
               value={jornaleroOptions.find((option) => option.value === formData.jornalero) || null}
               onChange={handleJornaleroChange}
-              isLoading={loadingJornaleros}
+              isLoading={loadingCatalogos}
               isClearable
               placeholder="Selecciona un jornalero"
               noOptionsMessage={() => "No hay jornaleros activos"}
-              classNames={{
-                control: () =>
-                  "!rounded-lg !border-slate-300 !text-sm !shadow-none focus-within:!border-sky-500 focus-within:!ring-2 focus-within:!ring-sky-500",
-              }}
+              classNames={selectClassNames}
+            />
+          </label>
+
+          <label className="flex flex-col gap-2 font-semibold text-slate-700">
+            Orden de compra
+            <Select
+              inputId="ordenCompra"
+              name="ordenCompra"
+              options={ordenCompraOptions}
+              value={ordenCompraOptions.find((option) => option.value === formData.ordenCompra) || null}
+              onChange={handleOrdenChange}
+              isLoading={loadingCatalogos}
+              isClearable
+              placeholder="Selecciona una orden"
+              noOptionsMessage={() => "No hay órdenes de compra activas"}
+              classNames={selectClassNames}
             />
           </label>
 
@@ -133,7 +162,7 @@ const ActividadForm = ({ jornaleroOptions, loadingJornaleros, onCreated }) => {
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">
             Actividades
           </h3>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
             {ACTIVIDADES_CAMPOS.map((campo) => (
               <label key={campo.key} className="flex flex-col gap-1 text-sm font-medium text-slate-600">
                 {campo.label}
@@ -152,8 +181,8 @@ const ActividadForm = ({ jornaleroOptions, loadingJornaleros, onCreated }) => {
 
         <button
           type="submit"
-          disabled={submitting || !formData.jornalero}
-          className="mt-2 rounded-lg bg-sky-600 px-4 py-3 font-bold text-white shadow-lg shadow-sky-950/20 transition hover:bg-sky-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+          disabled={submitting || !formData.jornalero || !formData.ordenCompra}
+          className="mt-2 rounded-lg bg-sky-600 px-4 py-3 font-bold text-white shadow-lg shadow-sky-950/20 transition hover:bg-sky-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none lg:w-auto lg:self-start lg:px-10"
         >
           {submitting ? "Registrando..." : "Registrar actividad"}
         </button>

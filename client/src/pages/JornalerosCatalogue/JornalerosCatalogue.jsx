@@ -59,7 +59,7 @@ const JornalerosCatalaogue = () => {
 
   return (
     <div>
-      <div className="mx-auto flex w-full max-w-3xl gap-1 overflow-x-auto border-b border-slate-200 sm:gap-2">
+      <div className="mx-auto flex w-full max-w-3xl gap-1 overflow-x-auto border-b border-slate-200 sm:gap-2 lg:max-w-5xl xl:max-w-6xl">
         {TABS.map((tab) => (
           <button
             key={tab.id}

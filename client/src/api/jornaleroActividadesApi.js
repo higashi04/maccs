@@ -1,13 +1,16 @@
 import { apiFetch } from "../utils/api";
 
 /**
- * Obtiene el registro de actividades diarias, opcionalmente filtrado por jornalero.
- * @param {string} [jornaleroId] - id del jornalero para filtrar el historial.
+ * Obtiene el registro de actividades diarias, filtrable por jornalero y/o por orden de compra.
+ * @param {{ jornalero?: string, ordenCompra?: string }} [filtros] - filtros opcionales.
  * @returns {Promise<Array<Object>>} arreglo de registros de actividades.
  */
-export async function getActividades(jornaleroId) {
-  const query = jornaleroId ? `?jornalero=${jornaleroId}` : "";
-  const response = await apiFetch(`/api/jornalero-actividades${query}`);
+export async function getActividades(filtros = {}) {
+  const query = new URLSearchParams(
+    Object.entries(filtros).filter(([, valor]) => valor !== undefined && valor !== "" && valor !== null)
+  ).toString();
+
+  const response = await apiFetch(`/api/jornalero-actividades${query ? `?${query}` : ""}`);
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
@@ -19,7 +22,7 @@ export async function getActividades(jornaleroId) {
 
 /**
  * Registra las actividades diarias realizadas por un jornalero.
- * @param {Object} actividad - datos de la actividad a registrar (jornalero, fecha, modelo y conteos por actividad).
+ * @param {Object} actividad - datos de la actividad a registrar (jornalero, ordenCompra, fecha, modelo y conteos por actividad).
  * @returns {Promise<Object>} el registro creado.
  */
 export async function createActividad(actividad) {

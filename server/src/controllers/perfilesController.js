@@ -36,6 +36,36 @@ const perfilesController = {
             console.error(error);
             res.status(500).json({ message: "server error" });
         }
+    },
+    /**
+     * Actualiza un perfil existente: su nombre y/o la lista de módulos permitidos
+     * (permite agregar y quitar módulos). Registra el usuario autenticado en updatedBy.
+     * @param {import('express').Request} req - request con :id en params y { nombrePerfil, modulos } en el body.
+     * @param {import('express').Response} res - responde con el perfil actualizado (200), 404 si no existe o 500 en error.
+     */
+    UpdatePerfil: async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { nombrePerfil, modulos } = req.body;
+
+            const cambios = { updatedBy: req.user?.username };
+            if (typeof nombrePerfil === "string") cambios.nombrePerfil = nombrePerfil;
+            if (Array.isArray(modulos)) cambios.modulos = modulos;
+
+            const perfilActualizado = await PerfilModel.findByIdAndUpdate(id, cambios, {
+                new: true,
+                runValidators: true
+            }).populate("modulos");
+
+            if (!perfilActualizado) {
+                return res.status(404).json({ message: "Perfil no encontrado" });
+            }
+
+            return res.status(200).json(perfilActualizado);
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: "server error" });
+        }
     }
 }
 

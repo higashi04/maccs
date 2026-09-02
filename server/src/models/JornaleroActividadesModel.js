@@ -7,6 +7,12 @@ const JornaleroActividadesSchema = new Schema({
         ref: 'jornaleros',
         required: true
     },
+    ordenCompra: {
+        type: Schema.Types.ObjectId,
+        ref: 'ordenCompra',
+        required: true,
+        index: true
+    },
     fecha: Date,
     modelo: String,
     respaldos: {

@@ -6,5 +6,6 @@ const router = express.Router();
 
 router.post("/create", verifyToken, requireAdmin, perfilesController.CreatePerfil);
 router.get("/read", verifyToken, perfilesController.ReadPerfiles);
+router.put("/update/:id", verifyToken, requireAdmin, perfilesController.UpdatePerfil);
 
 export default router;

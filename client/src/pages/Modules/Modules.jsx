@@ -51,14 +51,14 @@ function Modules() {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col rounded-2xl bg-white p-6 shadow-xl shadow-slate-300/40 sm:p-8">
+    <div className="mx-auto flex w-full max-w-3xl flex-col rounded-2xl bg-white p-6 shadow-xl shadow-slate-300/40 sm:p-8 lg:max-w-5xl xl:max-w-6xl">
       <h2 className="mb-2 text-2xl font-semibold text-slate-900 sm:text-3xl">Crear módulo</h2>
       <p className="mb-6 text-slate-500">
         Registra un nuevo módulo para que quede disponible en la aplicación.
       </p>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             <label className="flex flex-col gap-2 font-semibold text-slate-700">
               Nombre del módulo
               <input
@@ -115,7 +115,7 @@ function Modules() {
           <button
             type="submit"
             disabled={loading}
-            className="mt-2 rounded-lg bg-sky-600 px-4 py-3 font-bold text-white shadow-lg shadow-sky-950/20 transition hover:bg-sky-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+            className="mt-2 rounded-lg bg-sky-600 px-4 py-3 font-bold text-white shadow-lg shadow-sky-950/20 transition hover:bg-sky-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none lg:w-auto lg:self-start lg:px-10"
           >
             {loading ? "Creando..." : "Crear módulo"}
           </button>

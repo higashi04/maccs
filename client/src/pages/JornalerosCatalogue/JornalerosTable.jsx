@@ -163,7 +163,7 @@ const JornalerosTable = ({ jornaleros, loading, error, onManagePrestamos, onJorn
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col rounded-2xl bg-white p-4 shadow-xl shadow-slate-300/40 sm:p-6 lg:p-8">
+    <div className="mx-auto flex w-full max-w-3xl flex-col rounded-2xl bg-white p-4 shadow-xl shadow-slate-300/40 sm:p-6 lg:max-w-5xl lg:p-8 xl:max-w-6xl">
       <h3 className="mb-4 flex items-center gap-2 text-xl font-semibold text-slate-900 sm:text-2xl">
         <FontAwesomeIcon icon={faUsers} className="text-sky-600" />
         Jornaleros

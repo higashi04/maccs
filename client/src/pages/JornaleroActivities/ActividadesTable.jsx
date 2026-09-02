@@ -5,6 +5,7 @@ import {
   faChevronDown,
   faChevronUp,
   faClockRotateLeft,
+  faFileInvoiceDollar,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { deleteActividad } from "../../api/jornaleroActividadesApi";
@@ -28,8 +29,11 @@ const formatFecha = (fecha) => (fecha ? new Date(fecha).toLocaleDateString("es-M
  *   loading: boolean,
  *   error: string,
  *   jornaleroOptions: Array<{ value: string, label: string }>,
+ *   ordenCompraOptions: Array<{ value: string, label: string }>,
  *   jornaleroFiltro: string|null,
+ *   ordenFiltro: string|null,
  *   onFiltroChange: (jornaleroId: string|null) => void,
+ *   onOrdenFiltroChange: (ordenId: string|null) => void,
  *   onDeleted: (actividadId: string) => void,
  * }} props
  */
@@ -38,8 +42,11 @@ const ActividadesTable = ({
   loading,
   error,
   jornaleroOptions,
+  ordenCompraOptions,
   jornaleroFiltro,
+  ordenFiltro,
   onFiltroChange,
+  onOrdenFiltroChange,
   onDeleted,
 }) => {
   const [expandedId, setExpandedId] = useState(null);
@@ -50,6 +57,11 @@ const ActividadesTable = ({
   const filtroValue = useMemo(
     () => jornaleroOptions.find((option) => option.value === jornaleroFiltro) || null,
     [jornaleroOptions, jornaleroFiltro]
+  );
+
+  const ordenFiltroValue = useMemo(
+    () => ordenCompraOptions.find((option) => option.value === ordenFiltro) || null,
+    [ordenCompraOptions, ordenFiltro]
   );
 
   const toggleExpanded = (id) => {
@@ -83,26 +95,43 @@ const ActividadesTable = ({
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-4xl flex-col rounded-2xl bg-white p-4 shadow-xl shadow-slate-300/40 sm:p-6 lg:p-8">
-      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="mx-auto flex w-full max-w-4xl flex-col rounded-2xl bg-white p-4 shadow-xl shadow-slate-300/40 sm:p-6 lg:max-w-5xl lg:p-8 xl:max-w-6xl">
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <h3 className="flex items-center gap-2 text-xl font-semibold text-slate-900 sm:text-2xl">
           <FontAwesomeIcon icon={faClockRotateLeft} className="text-sky-600" />
           Historial de actividades
         </h3>
-        <div className="w-full sm:w-64">
-          <Select
-            inputId="filtroJornalero"
-            options={jornaleroOptions}
-            value={filtroValue}
-            onChange={(selected) => onFiltroChange(selected ? selected.value : null)}
-            isClearable
-            placeholder="Filtrar por jornalero"
-            noOptionsMessage={() => "No hay jornaleros"}
-            classNames={{
-              control: () =>
-                "!rounded-lg !border-slate-300 !text-sm !shadow-none focus-within:!border-sky-500 focus-within:!ring-2 focus-within:!ring-sky-500",
-            }}
-          />
+        <div className="grid gap-3 sm:grid-cols-2 lg:w-auto">
+          <div className="w-full sm:w-56">
+            <Select
+              inputId="filtroJornalero"
+              options={jornaleroOptions}
+              value={filtroValue}
+              onChange={(selected) => onFiltroChange(selected ? selected.value : null)}
+              isClearable
+              placeholder="Filtrar por jornalero"
+              noOptionsMessage={() => "No hay jornaleros"}
+              classNames={{
+                control: () =>
+                  "!rounded-lg !border-slate-300 !text-sm !shadow-none focus-within:!border-sky-500 focus-within:!ring-2 focus-within:!ring-sky-500",
+              }}
+            />
+          </div>
+          <div className="w-full sm:w-56">
+            <Select
+              inputId="filtroOrden"
+              options={ordenCompraOptions}
+              value={ordenFiltroValue}
+              onChange={(selected) => onOrdenFiltroChange(selected ? selected.value : null)}
+              isClearable
+              placeholder="Filtrar por orden"
+              noOptionsMessage={() => "No hay órdenes de compra"}
+              classNames={{
+                control: () =>
+                  "!rounded-lg !border-slate-300 !text-sm !shadow-none focus-within:!border-sky-500 focus-within:!ring-2 focus-within:!ring-sky-500",
+              }}
+            />
+          </div>
         </div>
       </div>
 
@@ -131,6 +160,12 @@ const ActividadesTable = ({
                     {formatFecha(actividad.fecha)}
                     {actividad.modelo ? ` · ${actividad.modelo}` : ""}
                   </p>
+                  {actividad.ordenCompra ? (
+                    <p className="mt-1 inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-600">
+                      <FontAwesomeIcon icon={faFileInvoiceDollar} className="text-slate-400" />
+                      {actividad.ordenCompra.ordenCompra}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="flex items-center gap-4">

@@ -10,6 +10,9 @@ import modulesRoutes from './routes/modulesRoutes.js';
 import perfilesRoutes from './routes/perfilesRoutes.js';
 import jornalerosRoutes from './routes/jornalerosRoutes.js';
 import jornaleroActividadesRoutes from './routes/jornaleroActividadesRoutes.js';
+import viaticosRoutes from './routes/viaticosRoutes.js';
+import ordenesCompraRoutes from './routes/ordenesCompraRoutes.js';
+import conceptosViaticoRoutes from './routes/conceptosViaticoRoutes.js';
 
 dotenv.config();
 
@@ -24,6 +27,9 @@ app.use("/api/modules", modulesRoutes);
 app.use("/api/perfiles", perfilesRoutes);
 app.use("/api/jornaleros", jornalerosRoutes);
 app.use("/api/jornalero-actividades", jornaleroActividadesRoutes);
+app.use("/api/viaticos", viaticosRoutes);
+app.use("/api/ordenes-compra", ordenesCompraRoutes);
+app.use("/api/conceptos-viatico", conceptosViaticoRoutes);
 
 mongoose.connect(process.env.MONGO_URL, {});
 

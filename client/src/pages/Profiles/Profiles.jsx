@@ -1,137 +1,107 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useModules } from "../../context/ModulesContext";
-import { resolveIcon } from "../../utils/iconRegistry";
-import { apiFetch } from "../../utils/api";
+import { faPlus, faUsersGear } from "@fortawesome/free-solid-svg-icons";
+import { getPerfiles } from "../../api/perfilesApi";
+import ProfileForm from "./ProfileForm";
+import ProfilesList from "./ProfilesList";
+import EditProfileModal from "./EditProfileModal";
 
+const TABS = [
+  { id: "crear", label: "Crear", icon: faPlus },
+  { id: "perfiles", label: "Perfiles", icon: faUsersGear },
+];
+
+/**
+ * Página del módulo Perfiles: permite crear nuevos perfiles y editar los
+ * existentes para agregar o quitar módulos.
+ * @returns {JSX.Element}
+ */
 function Profiles() {
-  const { modules, loading: loadingModules } = useModules();
-  const [formData, setFormData] = useState({
-    nombrePerfil: "",
-    modulos: [],
-  });
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState({ type: "", text: "" });
+  const [activeTab, setActiveTab] = useState("crear");
+  const [perfiles, setPerfiles] = useState([]);
+  const [listLoading, setListLoading] = useState(true);
+  const [listError, setListError] = useState("");
+  const [selectedPerfil, setSelectedPerfil] = useState(null);
 
-  const handleChange = (event) => {
-    const { name, value } = event.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const toggleModule = (moduleId) => {
-    setFormData((prev) => ({
-      ...prev,
-      modulos: prev.modulos.includes(moduleId)
-        ? prev.modulos.filter((id) => id !== moduleId)
-        : [...prev.modulos, moduleId],
-    }));
-  };
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setLoading(true);
-    setMessage({ type: "", text: "" });
-
-    if (formData.modulos.length === 0) {
-      setLoading(false);
-      setMessage({ type: "error", text: "Selecciona al menos un módulo" });
-      return;
-    }
-
+  /**
+   * Carga la lista de perfiles desde el servidor.
+   */
+  const loadPerfiles = async () => {
+    setListLoading(true);
+    setListError("");
     try {
-      const response = await apiFetch("/api/perfiles/create", {
-        method: "POST",
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        throw new Error(data?.message || "No se pudo crear el perfil");
-      }
-
-      setMessage({
-        type: "success",
-        text: `Perfil "${data.nombrePerfil}" creado correctamente`,
-      });
-      setFormData({ nombrePerfil: "", modulos: [] });
+      const data = await getPerfiles();
+      setPerfiles(data);
     } catch (error) {
-      setMessage({ type: "error", text: error.message });
+      setListError(error.message);
     } finally {
-      setLoading(false);
+      setListLoading(false);
     }
+  };
+
+  useEffect(() => {
+    loadPerfiles();
+  }, []);
+
+  /**
+   * Refresca la lista tras crear un perfil y cambia a la pestaña de perfiles.
+   */
+  const handleCreated = async () => {
+    await loadPerfiles();
+    setActiveTab("perfiles");
+  };
+
+  /**
+   * Reemplaza en la lista el perfil actualizado.
+   * @param {Object} perfilActualizado
+   */
+  const handleUpdated = (perfilActualizado) => {
+    setPerfiles((prev) =>
+      prev.map((perfil) =>
+        perfil._id === perfilActualizado._id ? perfilActualizado : perfil
+      )
+    );
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col rounded-2xl bg-white p-6 shadow-xl shadow-slate-300/40 sm:p-8">
-      <h2 className="mb-2 text-2xl font-semibold text-slate-900 sm:text-3xl">Crear perfil</h2>
-      <p className="mb-6 text-slate-500">
-        Define un perfil y los módulos a los que tendrán acceso los usuarios asignados a él.
-      </p>
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <label className="flex flex-col gap-2 font-semibold text-slate-700">
-            Nombre del perfil
-            <input
-              name="nombrePerfil"
-              type="text"
-              value={formData.nombrePerfil}
-              onChange={handleChange}
-              required
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
-              placeholder="Ej. Contador"
-            />
-          </label>
-
-          <div className="flex flex-col gap-2">
-            <span className="font-semibold text-slate-700">Módulos permitidos</span>
-
-            {loadingModules ? (
-              <p className="text-sm text-slate-500">Cargando módulos...</p>
-            ) : modules.length === 0 ? (
-              <p className="text-sm text-slate-500">
-                No hay módulos registrados todavía. Crea uno primero.
-              </p>
-            ) : (
-              <div className="grid gap-2 rounded-lg border border-slate-200 p-3 md:grid-cols-2">
-                {modules.map((module) => (
-                  <label
-                    key={module._id}
-                    className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.modulos.includes(module._id)}
-                      onChange={() => toggleModule(module._id)}
-                      className="h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500"
-                    />
-                    <FontAwesomeIcon icon={resolveIcon(module.icono)} className="w-4 text-slate-400" />
-                    {module.nombreModulo}
-                  </label>
-                ))}
-              </div>
-            )}
-          </div>
-
+    <div>
+      <div className="mx-auto flex w-full max-w-3xl gap-1 overflow-x-auto border-b border-slate-200 sm:gap-2 lg:max-w-5xl xl:max-w-6xl">
+        {TABS.map((tab) => (
           <button
-            type="submit"
-            disabled={loading}
-            className="mt-2 rounded-lg bg-sky-600 px-4 py-3 font-bold text-white shadow-lg shadow-sky-950/20 transition hover:bg-sky-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:shadow-none"
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-sm font-semibold transition sm:px-4 ${
+              activeTab === tab.id
+                ? "border-sky-600 text-sky-600"
+                : "border-transparent text-slate-500 hover:text-slate-700"
+            }`}
           >
-            {loading ? "Creando..." : "Crear perfil"}
+            <FontAwesomeIcon icon={tab.icon} />
+            {tab.label}
           </button>
-        </form>
+        ))}
+      </div>
 
-      {message.text ? (
-        <p
-          className={`mt-4 rounded-lg px-3 py-2 font-semibold ${
-            message.type === "error"
-              ? "bg-red-100 text-red-700"
-              : "bg-emerald-100 text-emerald-800"
-          }`}
-        >
-          {message.text}
-        </p>
+      <div className="mt-6">
+        {activeTab === "crear" ? (
+          <ProfileForm onCreated={handleCreated} />
+        ) : (
+          <ProfilesList
+            perfiles={perfiles}
+            loading={listLoading}
+            error={listError}
+            onEdit={setSelectedPerfil}
+          />
+        )}
+      </div>
+
+      {selectedPerfil ? (
+        <EditProfileModal
+          perfil={selectedPerfil}
+          onClose={() => setSelectedPerfil(null)}
+          onUpdated={handleUpdated}
+        />
       ) : null}
     </div>
   );
