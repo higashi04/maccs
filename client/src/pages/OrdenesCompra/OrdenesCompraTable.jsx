@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCheck,
+  faChartLine,
   faFileInvoiceDollar,
   faPen,
   faRotateLeft,
@@ -30,9 +31,10 @@ const initialEditValues = {
  *   loading: boolean,
  *   error: string,
  *   onOrdenUpdated: (orden: Object) => void,
+ *   onVerDetalle: (orden: Object) => void,
  * }} props
  */
-const OrdenesCompraTable = ({ ordenes, loading, error, onOrdenUpdated }) => {
+const OrdenesCompraTable = ({ ordenes, loading, error, onOrdenUpdated, onVerDetalle }) => {
   const [editingId, setEditingId] = useState(null);
   const [editValues, setEditValues] = useState(initialEditValues);
   const [savingId, setSavingId] = useState(null);
@@ -113,6 +115,14 @@ const OrdenesCompraTable = ({ ordenes, loading, error, onOrdenUpdated }) => {
 
   const renderActions = (orden) => (
     <div className="flex flex-wrap justify-end gap-2">
+      <button
+        type="button"
+        onClick={() => onVerDetalle(orden)}
+        className="rounded-lg bg-sky-50 px-2 py-1.5 text-sky-600 transition hover:bg-sky-100"
+        title="Ver gastos y avance"
+      >
+        <FontAwesomeIcon icon={faChartLine} />
+      </button>
       <button
         type="button"
         onClick={() => startEditing(orden)}

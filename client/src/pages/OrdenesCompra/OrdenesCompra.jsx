@@ -4,10 +4,11 @@ import { faFileCirclePlus, faFileInvoiceDollar } from "@fortawesome/free-solid-s
 import { getAllOrdenesCompra } from "../../api/ordenesCompraApi";
 import OrdenCompraForm from "./OrdenCompraForm";
 import OrdenesCompraTable from "./OrdenesCompraTable";
+import OrdenCompraDetalleModal from "./OrdenCompraDetalleModal";
 
 const TABS = [
-  { id: "registrar", label: "Registrar", icon: faFileCirclePlus },
   { id: "ordenes", label: "Órdenes", icon: faFileInvoiceDollar },
+  { id: "registrar", label: "Registrar", icon: faFileCirclePlus },
 ];
 
 /**
@@ -15,10 +16,11 @@ const TABS = [
  * consultarlas y gestionar su folio, monto esperado y estado.
  */
 const OrdenesCompra = () => {
-  const [activeTab, setActiveTab] = useState("registrar");
+  const [activeTab, setActiveTab] = useState("ordenes");
   const [ordenes, setOrdenes] = useState([]);
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState("");
+  const [detalleOrden, setDetalleOrden] = useState(null);
 
   const loadOrdenes = async () => {
     setListLoading(true);
@@ -77,9 +79,17 @@ const OrdenesCompra = () => {
             loading={listLoading}
             error={listError}
             onOrdenUpdated={updateOrdenInList}
+            onVerDetalle={setDetalleOrden}
           />
         )}
       </div>
+
+      {detalleOrden ? (
+        <OrdenCompraDetalleModal
+          orden={detalleOrden}
+          onClose={() => setDetalleOrden(null)}
+        />
+      ) : null}
     </div>
   );
 };
