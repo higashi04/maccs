@@ -6,6 +6,7 @@ import JornalerosActivities from "../pages/JornaleroActivities/JornaleroActiviti
 import Viaticos from "../pages/Viaticos/Viaticos";
 import OrdenesCompra from "../pages/OrdenesCompra/OrdenesCompra";
 import ConceptosViatico from "../pages/ConceptosViatico/ConceptosViatico";
+import ConceptosActividad from "../pages/ConceptosActividad/ConceptosActividad";
 
 // Add every page a module can point to here, keyed by component name.
 const moduleComponents = {
@@ -17,6 +18,7 @@ const moduleComponents = {
   Viaticos,
   OrdenesCompra,
   ConceptosViatico,
+  ConceptosActividad,
 };
 
 // Accepts either a plain key ("CreateUser") or a JSX-looking string

@@ -8,11 +8,6 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { getViaticosByOrden } from "../../api/viaticosApi";
 import { getActividades } from "../../api/jornaleroActividadesApi";
-import { ACTIVIDADES_CAMPOS } from "../../constants/actividadesCampos";
-
-const CAMPOS_PIEZAS = ACTIVIDADES_CAMPOS.filter(
-  (campo) => campo.key !== "porDia" && campo.key !== "porHora"
-);
 
 const formatMonto = (monto) =>
   Number(monto || 0).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
@@ -30,6 +25,16 @@ const formatFecha = (fecha) =>
 const nombreConcepto = (concepto) => {
   if (!concepto || typeof concepto !== "object") return "Concepto";
   return concepto.nombre ? `${concepto.TipoViatico} — ${concepto.nombre}` : concepto.TipoViatico;
+};
+
+/**
+ * Etiqueta legible de una actividad del catálogo poblada desde el servidor.
+ * @param {Object|string|null} actividad - actividad poblada (`{ nombre, descripcion }`) o su id.
+ * @returns {string}
+ */
+const nombreActividad = (actividad) => {
+  if (!actividad || typeof actividad !== "object") return "Actividad";
+  return actividad.descripcion ? `${actividad.nombre} — ${actividad.descripcion}` : actividad.nombre;
 };
 
 /**
@@ -77,17 +82,46 @@ const OrdenCompraDetalleModal = ({ orden, onClose }) => {
   );
 
   const montoEsperado = Number(orden?.MontoEsperado || 0);
-  const diferencia = montoEsperado - totalGastado;
 
-  /** Suma de piezas por actividad y total general a partir de todos los registros de avance. */
+  /** Cantidades y salario agrupados por actividad del catálogo, más el total de mano de obra. */
   const avance = useMemo(() => {
-    const porCampo = CAMPOS_PIEZAS.map((campo) => ({
-      ...campo,
-      total: actividades.reduce((suma, act) => suma + (Number(act[campo.key]) || 0), 0),
-    }));
-    const totalPiezas = porCampo.reduce((suma, campo) => suma + campo.total, 0);
-    return { porCampo: porCampo.filter((campo) => campo.total > 0), totalPiezas };
+    const acumulado = new Map();
+    for (const act of actividades) {
+      const id = act.actividad?._id || act.actividad || "sin-actividad";
+      const label = nombreActividad(act.actividad);
+      const previo = acumulado.get(id) || { key: id, label, cantidad: 0, salario: 0 };
+      previo.cantidad += Number(act.cantidad) || 0;
+      previo.salario += Number(act.salarioJornalero) || 0;
+      acumulado.set(id, previo);
+    }
+    const porCampo = [...acumulado.values()].filter((campo) => campo.cantidad > 0);
+    const totalManoObra = actividades.reduce(
+      (suma, act) => suma + (Number(act.salarioJornalero) || 0),
+      0
+    );
+    return { porCampo, totalManoObra };
   }, [actividades]);
+
+  /** Restante del monto esperado tras descontar viáticos y mano de obra. */
+  const restanteTrasManoObra = montoEsperado - totalGastado - avance.totalManoObra;
+
+  /**
+   * Porcentaje del monto esperado que representa el restante (0 si no hay monto esperado).
+   * @type {number}
+   */
+  const restantePct = montoEsperado > 0 ? restanteTrasManoObra / montoEsperado : 0;
+
+  /**
+   * Semáforo del restante según su porcentaje del monto esperado:
+   * verde > 50%, amarillo 35–50%, rojo < 35%.
+   * @type {{ text: string, bg: string, border: string }}
+   */
+  const restanteTono =
+    montoEsperado > 0 && restantePct >= 0.5
+      ? { text: "text-emerald-700", bg: "bg-emerald-50", border: "border-emerald-200" }
+      : montoEsperado > 0 && restantePct >= 0.35
+        ? { text: "text-amber-600", bg: "bg-amber-50", border: "border-amber-200" }
+        : { text: "text-red-600", bg: "bg-red-50", border: "border-red-200" };
 
   return (
     <div
@@ -127,33 +161,35 @@ const OrdenCompraDetalleModal = ({ orden, onClose }) => {
             <p className="rounded-lg bg-red-100 px-3 py-2 font-semibold text-red-700">{error}</p>
           ) : (
             <div className="flex flex-col gap-8">
+              {/* Scorecard: restante tras descontar viáticos y mano de obra */}
+              <div className={`rounded-xl border p-4 ${restanteTono.border} ${restanteTono.bg}`}>
+                <div className="flex flex-wrap items-end justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-slate-500">
+                      Restante tras mano de obra y viáticos
+                    </p>
+                    <p className={`text-2xl font-bold sm:text-3xl ${restanteTono.text}`}>
+                      {formatMonto(restanteTrasManoObra)}
+                    </p>
+                  </div>
+                  <div className="text-right text-xs text-slate-500">
+                    <p className={`text-sm font-semibold ${restanteTono.text}`}>
+                      {montoEsperado > 0 ? `${Math.round(restantePct * 100)}% del monto esperado` : "Sin monto esperado"}
+                    </p>
+                    <p className="mt-0.5">
+                      Esperado {formatMonto(montoEsperado)} · Viáticos {formatMonto(totalGastado)} · Mano de
+                      obra {formatMonto(avance.totalManoObra)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Gastos / viáticos */}
               <section>
                 <h4 className="mb-3 flex items-center gap-2 text-base font-semibold text-slate-900">
                   <FontAwesomeIcon icon={faSackDollar} className="text-sky-600" />
                   Gastos (viáticos)
                 </h4>
-
-                <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <div className="rounded-xl bg-slate-50 px-4 py-3">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Total gastado</p>
-                    <p className="text-lg font-bold text-slate-800">{formatMonto(totalGastado)}</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 px-4 py-3">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Monto esperado</p>
-                    <p className="text-lg font-bold text-slate-800">{formatMonto(montoEsperado)}</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 px-4 py-3">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Diferencia</p>
-                    <p
-                      className={`text-lg font-bold ${
-                        diferencia < 0 ? "text-red-600" : "text-emerald-700"
-                      }`}
-                    >
-                      {formatMonto(diferencia)}
-                    </p>
-                  </div>
-                </div>
 
                 {viaticos.length === 0 ? (
                   <p className="text-sm text-slate-500">No hay viáticos registrados para esta orden.</p>
@@ -194,14 +230,10 @@ const OrdenCompraDetalleModal = ({ orden, onClose }) => {
                   Avance en trabajos
                 </h4>
 
-                <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div className="rounded-xl bg-slate-50 px-4 py-3">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Registros de avance</p>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">Actividades capturadas</p>
                     <p className="text-lg font-bold text-slate-800">{actividades.length}</p>
-                  </div>
-                  <div className="rounded-xl bg-slate-50 px-4 py-3">
-                    <p className="text-xs uppercase tracking-wide text-slate-400">Piezas trabajadas</p>
-                    <p className="text-lg font-bold text-slate-800">{avance.totalPiezas}</p>
                   </div>
                   <div className="rounded-xl bg-slate-50 px-4 py-3">
                     <p className="text-xs uppercase tracking-wide text-slate-400">Sillas de la orden</p>
@@ -216,14 +248,16 @@ const OrdenCompraDetalleModal = ({ orden, onClose }) => {
                 ) : (
                   <>
                     {avance.porCampo.length > 0 ? (
-                      <div className="mb-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3 lg:grid-cols-4">
+                      <div className="mb-4 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2 lg:grid-cols-3">
                         {avance.porCampo.map((campo) => (
                           <div
                             key={campo.key}
-                            className="flex justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-slate-600"
+                            className="flex items-center justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-slate-600"
                           >
                             <span>{campo.label}</span>
-                            <span className="font-semibold text-slate-800">{campo.total}</span>
+                            <span className="font-semibold text-slate-800">
+                              {campo.cantidad} · {formatMonto(campo.salario)}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -235,8 +269,9 @@ const OrdenCompraDetalleModal = ({ orden, onClose }) => {
                           <tr className="border-b border-slate-200 text-slate-500">
                             <th className="py-2 pr-4">Jornalero</th>
                             <th className="py-2 pr-4">Fecha</th>
-                            <th className="py-2 pr-4">Modelo</th>
-                            <th className="py-2 pr-4 text-right">Piezas</th>
+                            <th className="py-2 pr-4">Actividad</th>
+                            <th className="py-2 pr-4 text-right">Cantidad</th>
+                            <th className="py-2 pr-4 text-right">Salario</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -248,12 +283,14 @@ const OrdenCompraDetalleModal = ({ orden, onClose }) => {
                               <td className="py-2 pr-4 text-slate-600">
                                 {formatFecha(actividad.fecha)}
                               </td>
-                              <td className="py-2 pr-4 text-slate-600">{actividad.modelo || "—"}</td>
+                              <td className="py-2 pr-4 text-slate-600">
+                                {nombreActividad(actividad.actividad)}
+                              </td>
                               <td className="py-2 pr-4 text-right font-semibold text-slate-800">
-                                {CAMPOS_PIEZAS.reduce(
-                                  (total, campo) => total + (Number(actividad[campo.key]) || 0),
-                                  0
-                                )}
+                                {Number(actividad.cantidad) || 0}
+                              </td>
+                              <td className="py-2 pr-4 text-right font-semibold text-slate-800">
+                                {formatMonto(actividad.salarioJornalero)}
                               </td>
                             </tr>
                           ))}
@@ -262,6 +299,41 @@ const OrdenCompraDetalleModal = ({ orden, onClose }) => {
                     </div>
                   </>
                 )}
+              </section>
+
+              {/* Balance de la orden: monto esperado menos viáticos y mano de obra */}
+              <section>
+                <h4 className="mb-3 flex items-center gap-2 text-base font-semibold text-slate-900">
+                  <FontAwesomeIcon icon={faSackDollar} className="text-sky-600" />
+                  Balance de la orden
+                </h4>
+                <div className="overflow-hidden rounded-xl border border-slate-200">
+                  <div className="flex items-center justify-between px-4 py-2.5 text-sm">
+                    <span className="text-slate-500">Monto esperado</span>
+                    <span className="font-semibold text-slate-800">{formatMonto(montoEsperado)}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2.5 text-sm">
+                    <span className="text-slate-500">− Viáticos</span>
+                    <span className="font-semibold text-slate-800">{formatMonto(totalGastado)}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-slate-100 px-4 py-2.5 text-sm">
+                    <span className="text-slate-500">− Mano de obra</span>
+                    <span className="font-semibold text-slate-800">
+                      {formatMonto(avance.totalManoObra)}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                    <span className="font-semibold text-slate-600">Restante tras mano de obra y viáticos</span>
+                    <span className={`text-base font-bold ${restanteTono.text}`}>
+                      {formatMonto(restanteTrasManoObra)}
+                      {montoEsperado > 0 ? (
+                        <span className="ml-2 text-xs font-semibold">
+                          ({Math.round(restantePct * 100)}%)
+                        </span>
+                      ) : null}
+                    </span>
+                  </div>
+                </div>
               </section>
 
               {/* Criterio pendiente de definir con el stakeholder */}

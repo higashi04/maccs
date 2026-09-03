@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClipboardList, faClockRotateLeft } from "@fortawesome/free-solid-svg-icons";
 import { getJornaleros } from "../../api/jornalerosApi";
 import { getOrdenesCompra } from "../../api/ordenesCompraApi";
+import { getConceptosActividad } from "../../api/conceptosActividadApi";
 import { getActividades } from "../../api/jornaleroActividadesApi";
 import ActividadForm from "./ActividadForm";
 import ActividadesTable from "./ActividadesTable";
@@ -21,14 +22,17 @@ const ordenLabel = (orden) =>
   orden.modeloSillas ? `${orden.ordenCompra} — ${orden.modeloSillas}` : orden.ordenCompra;
 
 /**
- * Página de registro diario de actividades: permite seleccionar un jornalero activo
- * y una orden de compra, capturar el avance del día y consultar el historial.
+ * Página de registro de actividades: permite seleccionar un jornalero activo y una
+ * orden de compra, capturar N actividades del día (usando el catálogo de
+ * actividades) y consultar/editar el historial.
  */
 const JornaleroActivities = () => {
   const [activeTab, setActiveTab] = useState("registrar");
   const [jornaleros, setJornaleros] = useState([]);
   const [ordenes, setOrdenes] = useState([]);
+  const [conceptos, setConceptos] = useState([]);
   const [loadingCatalogos, setLoadingCatalogos] = useState(true);
+  const [catalogError, setCatalogError] = useState("");
   const [actividades, setActividades] = useState([]);
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState("");
@@ -47,15 +51,19 @@ const JornaleroActivities = () => {
 
   useEffect(() => {
     const cargarCatalogos = async () => {
+      setLoadingCatalogos(true);
+      setCatalogError("");
       try {
-        const [jornalerosData, ordenesData] = await Promise.all([
+        const [jornalerosData, ordenesData, conceptosData] = await Promise.all([
           getJornaleros(),
           getOrdenesCompra(),
+          getConceptosActividad(),
         ]);
         setJornaleros(jornalerosData);
         setOrdenes(ordenesData);
+        setConceptos(conceptosData);
       } catch (error) {
-        setListError(error.message);
+        setCatalogError(error.message);
       } finally {
         setLoadingCatalogos(false);
       }
@@ -89,16 +97,31 @@ const JornaleroActivities = () => {
   }, [jornaleroFiltro, ordenFiltro]);
 
   /**
-   * Añade el registro recién creado al historial si encaja con los filtros activos.
-   * @param {Object} actividad
+   * Añade los registros recién creados al historial si encajan con los filtros activos.
+   * @param {Array<Object>} creadas
    */
-  const handleCreated = (actividad) => {
-    const encajaJornalero = !jornaleroFiltro || jornaleroFiltro === actividad.jornalero?._id;
-    const encajaOrden = !ordenFiltro || ordenFiltro === actividad.ordenCompra?._id;
-    if (encajaJornalero && encajaOrden) {
-      setActividades((prev) => [actividad, ...prev]);
+  const handleCreated = (creadas) => {
+    const encajan = creadas.filter((actividad) => {
+      const encajaJornalero = !jornaleroFiltro || jornaleroFiltro === actividad.jornalero?._id;
+      const encajaOrden = !ordenFiltro || ordenFiltro === actividad.ordenCompra?._id;
+      return encajaJornalero && encajaOrden;
+    });
+    if (encajan.length > 0) {
+      setActividades((prev) => [...encajan, ...prev]);
     }
     setActiveTab("historial");
+  };
+
+  /**
+   * Reemplaza una actividad en la lista local con su versión actualizada.
+   * @param {Object} actividadActualizada
+   */
+  const updateActividadInList = (actividadActualizada) => {
+    setActividades((prev) =>
+      prev.map((actividad) =>
+        actividad._id === actividadActualizada._id ? actividadActualizada : actividad
+      )
+    );
   };
 
   const handleDeleted = (actividadId) => {
@@ -130,12 +153,16 @@ const JornaleroActivities = () => {
           <ActividadForm
             jornaleroOptions={jornaleroOptions}
             ordenCompraOptions={ordenCompraOptions}
+            ordenes={ordenes}
+            conceptos={conceptos}
             loadingCatalogos={loadingCatalogos}
+            catalogError={catalogError}
             onCreated={handleCreated}
           />
         ) : (
           <ActividadesTable
             actividades={actividades}
+            conceptos={conceptos}
             loading={listLoading}
             error={listError}
             jornaleroOptions={jornaleroOptions}
@@ -144,6 +171,7 @@ const JornaleroActivities = () => {
             ordenFiltro={ordenFiltro}
             onFiltroChange={setJornaleroFiltro}
             onOrdenFiltroChange={setOrdenFiltro}
+            onActividadUpdated={updateActividadInList}
             onDeleted={handleDeleted}
           />
         )}

@@ -2,9 +2,11 @@ import { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFileCirclePlus } from "@fortawesome/free-solid-svg-icons";
 import { createOrdenCompra } from "../../api/ordenesCompraApi";
+import { TIPOS_SILLA } from "../../constants/tiposSilla";
 
 const initialFormData = {
   modeloSillas: "",
+  tipoSilla: "",
   cantidadSillas: "",
   MontoEsperado: "",
   active: true,
@@ -33,6 +35,7 @@ const OrdenCompraForm = ({ onCreated }) => {
     try {
       const nuevaOrden = await createOrdenCompra({
         modeloSillas: formData.modeloSillas.trim(),
+        tipoSilla: formData.tipoSilla || undefined,
         cantidadSillas: Number(formData.cantidadSillas) || 0,
         MontoEsperado: Number(formData.MontoEsperado) || 0,
         active: formData.active,
@@ -73,6 +76,28 @@ const OrdenCompraForm = ({ onCreated }) => {
               className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
               placeholder="Ej. Silla colonial"
             />
+          </label>
+
+          <label className="flex flex-col gap-2 font-semibold text-slate-700 sm:col-span-2">
+            <span className="flex items-baseline gap-1">
+              Tipo de silla
+              <span className="text-xs font-normal text-slate-400">
+                Determina la tarifa de las actividades
+              </span>
+            </span>
+            <select
+              name="tipoSilla"
+              value={formData.tipoSilla}
+              onChange={handleChange}
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+            >
+              <option value="">Sin especificar</option>
+              {TIPOS_SILLA.map((tipo) => (
+                <option key={tipo.code} value={tipo.code}>
+                  {tipo.label} ({tipo.code})
+                </option>
+              ))}
+            </select>
           </label>
 
           <label className="flex flex-col gap-2 font-semibold text-slate-700">

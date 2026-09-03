@@ -5,7 +5,9 @@ import { verifyToken, requireAdmin } from "../middleware/authMiddleware.js";
 import jornaleroActividadesController from "../controllers/jornaleroActividadesController.js";
 
 router.get("/", verifyToken, jornaleroActividadesController.ReadActividades);
-router.post("/", verifyToken, jornaleroActividadesController.crearActividad);
+// Captura masiva: N actividades de un jornalero ligadas a una orden de compra en un solo request.
+router.post("/", verifyToken, jornaleroActividadesController.crearActividades);
+router.put("/:id", verifyToken, requireAdmin, jornaleroActividadesController.actualizarActividad);
 router.delete("/:id", verifyToken, requireAdmin, jornaleroActividadesController.eliminarActividad);
 
 export default router;

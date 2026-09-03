@@ -48,7 +48,7 @@ export async function getOrdenCompraById(ordenId) {
 
 /**
  * Crea una nueva orden de compra. El folio lo genera el servidor automáticamente.
- * @param {{ modeloSillas: string, cantidadSillas?: number, MontoEsperado?: number, active?: boolean }} orden - datos de la orden a crear.
+ * @param {{ modeloSillas: string, tipoSilla?: string, cantidadSillas?: number, MontoEsperado?: number, active?: boolean }} orden - datos de la orden a crear.
  * @returns {Promise<Object>} la orden de compra creada.
  */
 export async function createOrdenCompra(orden) {
@@ -69,7 +69,7 @@ export async function createOrdenCompra(orden) {
 /**
  * Actualiza el modelo, cantidad, monto esperado y/o estado activo de una orden de compra.
  * @param {string} ordenId - id de la orden de compra.
- * @param {{ modeloSillas?: string, cantidadSillas?: number, MontoEsperado?: number, active?: boolean }} cambios - campos a actualizar.
+ * @param {{ modeloSillas?: string, tipoSilla?: string, cantidadSillas?: number, MontoEsperado?: number, active?: boolean }} cambios - campos a actualizar.
  * @returns {Promise<Object>} la orden de compra actualizada.
  */
 export async function updateOrdenCompra(ordenId, cambios) {

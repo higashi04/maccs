@@ -24,12 +24,12 @@ const generarFolio = async () => {
 const ordenesCompraController = {
   /**
    * Crea una nueva orden de compra con folio generado automáticamente.
-   * @param {import('express').Request} req - request con { modeloSillas, cantidadSillas, MontoEsperado, active } en el body.
+   * @param {import('express').Request} req - request con { modeloSillas, tipoSilla, cantidadSillas, MontoEsperado, active } en el body.
    * @param {import('express').Response} res - responde con la orden creada (201) o un error (500).
    */
   crearOrdenCompra: async (req, res) => {
     try {
-      const { modeloSillas, cantidadSillas, MontoEsperado, active } = req.body;
+      const { modeloSillas, tipoSilla, cantidadSillas, MontoEsperado, active } = req.body;
 
       // Reintenta ante una colisión de folio por creación concurrente.
       for (let intento = 0; intento < 5; intento += 1) {
@@ -37,6 +37,7 @@ const ordenesCompraController = {
           const orden = await OrdenCompraModel.create({
             ordenCompra: await generarFolio(),
             modeloSillas,
+            ...(tipoSilla ? { tipoSilla } : {}),
             ...(cantidadSillas !== undefined ? { cantidadSillas } : {}),
             ...(MontoEsperado !== undefined ? { MontoEsperado } : {}),
             ...(active !== undefined ? { active } : {}),
@@ -109,18 +110,19 @@ const ordenesCompraController = {
   /**
    * Actualiza el modelo, cantidad, monto esperado y/o estado activo de una orden de compra.
    * El folio es generado por el sistema y no puede modificarse.
-   * @param {import('express').Request} req - request con :id de la orden y { modeloSillas, cantidadSillas, MontoEsperado, active } en el body.
+   * @param {import('express').Request} req - request con :id de la orden y { modeloSillas, tipoSilla, cantidadSillas, MontoEsperado, active } en el body.
    * @param {import('express').Response} res - responde con la orden actualizada (200) o un error (404/500).
    */
   actualizarOrdenCompra: async (req, res) => {
     try {
       const { id } = req.params;
-      const { modeloSillas, cantidadSillas, MontoEsperado, active } = req.body;
+      const { modeloSillas, tipoSilla, cantidadSillas, MontoEsperado, active } = req.body;
 
       const orden = await OrdenCompraModel.findByIdAndUpdate(
         id,
         {
           ...(modeloSillas !== undefined ? { modeloSillas } : {}),
+          ...(tipoSilla !== undefined ? { tipoSilla: tipoSilla || undefined } : {}),
           ...(cantidadSillas !== undefined ? { cantidadSillas } : {}),
           ...(MontoEsperado !== undefined ? { MontoEsperado } : {}),
           ...(active !== undefined ? { active } : {}),

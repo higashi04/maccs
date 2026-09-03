@@ -1,116 +1,67 @@
 import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
-const JornaleroActividadesSchema = new Schema({
+/**
+ * Modelo de Actividades de Jornaleros.
+ *
+ * Sigue el mismo estándar que `viaticos`: cada documento representa UNA actividad
+ * capturada para un jornalero, ligada a una orden de compra y a un concepto del
+ * catálogo `conceptoActividad`. Se capturan en lote (ver
+ * `jornaleroActividadesController.crearActividades`), de forma que un jornalero
+ * puede tener N actividades registradas por día.
+ */
+const JornaleroActividadesSchema = new Schema(
+  {
     jornalero: {
-        type: Schema.Types.ObjectId,
-        ref: 'jornaleros',
-        required: true
+      type: Schema.Types.ObjectId,
+      ref: "jornaleros",
+      required: true,
+      index: true,
     },
     ordenCompra: {
-        type: Schema.Types.ObjectId,
-        ref: 'ordenCompra',
-        required: true,
-        index: true
+      type: Schema.Types.ObjectId,
+      ref: "ordenCompra",
+      required: true,
+      index: true,
     },
-    fecha: Date,
-    modelo: String,
-    respaldos: {
-        type: Number,
-        default: 0
+    actividad: {
+      type: Schema.Types.ObjectId,
+      ref: "conceptoActividad",
+      required: true,
     },
-    quitarAsientos: {
-        type: Number,
-        default: 0
+    cantidad: {
+      type: Number,
+      default: 0,
+      required: true,
     },
-    raspar: {
-        type: Number,
-        default: 0
+    // Monto que gana el jornalero por esta línea. Se calcula en el servidor:
+    // `cantidad × tarifa(actividad, tipoSilla de la orden de compra)`.
+    salarioJornalero: {
+      type: Number,
+      default: 0,
     },
-    carpinteria: {
-        type: Number,
-        default: 0
+    fecha: {
+      type: Date,
+      default: Date.now,
     },
-    botarClavosYResanar: {
-        type: Number,
-        default: 0
+    modelo: {
+      type: String,
+      trim: true,
     },
-    pulir: {
-        type: Number,
-        default: 0
+    descripcion: {
+      type: String,
+      trim: true,
     },
-    lijaDeMano: {
-        type: Number,
-        default: 0
+    activo: {
+      type: Boolean,
+      default: true,
     },
-    primeraTinta: {
-        type: Number,
-        default: 0
-    },
-    segundaTinta: {
-        type: Number,
-        default: 0
-    },
-    terceraTinta: {
-        type: Number,
-        default: 0
-    },
-    sellador: {
-        type: Number,
-        default: 0
-    },
-    primer: {
-        type: Number,
-        default: 0
-    },
-    inicio: {
-        type: Number,
-        default: 0
-    },
-    tejidas: {
-        type: Number,
-        default: 0
-    },
-    asentada: {
-        type: Number,
-        default: 0
-    },
-    laca: {
-        type: Number,
-        default: 0
-    },
-    ponerResbalones: {
-        type: Number,
-        default: 0
-    },
-    asentarConCarton: {
-        type: Number,
-        default: 0
-    },
-    porDia: {
-        type: Number,
-        default: 0
-    },
-    porHora: {
-        type: Number,
-        default: 0
-    },
-    // prestamos: {
-    //     type: Number,
-    //     default: 0
-    // },
-    // prestamosPendientes: {
-    //     type: Number,
-    //     default: 0
-    // },
-    // extras: {
-    //     type: Number,
-    //     default: 0
-    // },
     createdBy: String,
-}, {
-    timestamps: true
-    }
+    updatedBy: String,
+  },
+  {
+    timestamps: true,
+  }
 );
 
-export default mongoose.model('jornaleroActividades', JornaleroActividadesSchema);
+export default mongoose.model("jornaleroActividades", JornaleroActividadesSchema);

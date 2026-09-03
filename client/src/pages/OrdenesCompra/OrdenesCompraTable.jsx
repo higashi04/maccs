@@ -11,12 +11,14 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { deleteOrdenCompra, updateOrdenCompra } from "../../api/ordenesCompraApi";
 import ConfirmDialog from "../../components/ConfirmDialog";
+import { TIPOS_SILLA, tipoSillaLabel } from "../../constants/tiposSilla";
 
 const formatMonto = (monto) =>
   Number(monto || 0).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
 
 const initialEditValues = {
   modeloSillas: "",
+  tipoSilla: "",
   cantidadSillas: 0,
   MontoEsperado: 0,
   active: true,
@@ -45,6 +47,7 @@ const OrdenesCompraTable = ({ ordenes, loading, error, onOrdenUpdated, onVerDeta
     setEditingId(orden._id);
     setEditValues({
       modeloSillas: orden.modeloSillas ?? "",
+      tipoSilla: orden.tipoSilla ?? "",
       cantidadSillas: orden.cantidadSillas ?? 0,
       MontoEsperado: orden.MontoEsperado ?? 0,
       active: orden.active,
@@ -62,6 +65,7 @@ const OrdenesCompraTable = ({ ordenes, loading, error, onOrdenUpdated, onVerDeta
     try {
       const actualizada = await updateOrdenCompra(ordenId, {
         modeloSillas: editValues.modeloSillas.trim(),
+        tipoSilla: editValues.tipoSilla,
         cantidadSillas: Number(editValues.cantidadSillas) || 0,
         MontoEsperado: Number(editValues.MontoEsperado) || 0,
         active: editValues.active,
@@ -188,6 +192,23 @@ const OrdenesCompraTable = ({ ordenes, loading, error, onOrdenUpdated, onVerDeta
     />
   );
 
+  const editTipoSillaSelect = (
+    <select
+      value={editValues.tipoSilla}
+      onChange={(event) =>
+        setEditValues((prev) => ({ ...prev, tipoSilla: event.target.value }))
+      }
+      className="w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-500"
+    >
+      <option value="">Sin especificar</option>
+      {TIPOS_SILLA.map((tipo) => (
+        <option key={tipo.code} value={tipo.code}>
+          {tipo.label} ({tipo.code})
+        </option>
+      ))}
+    </select>
+  );
+
   const editCantidadInput = (
     <input
       type="number"
@@ -266,6 +287,10 @@ const OrdenesCompraTable = ({ ordenes, loading, error, onOrdenUpdated, onVerDeta
                       {editModeloInput}
                     </label>
                     <label className="flex flex-col gap-1 text-xs font-semibold text-slate-600">
+                      Tipo de silla
+                      {editTipoSillaSelect}
+                    </label>
+                    <label className="flex flex-col gap-1 text-xs font-semibold text-slate-600">
                       Cantidad de sillas
                       {editCantidadInput}
                     </label>
@@ -280,6 +305,12 @@ const OrdenesCompraTable = ({ ordenes, loading, error, onOrdenUpdated, onVerDeta
                     <p className="text-sm text-slate-500">
                       Modelo:{" "}
                       <span className="font-semibold text-slate-700">{orden.modeloSillas}</span>
+                    </p>
+                    <p className="text-sm text-slate-500">
+                      Tipo de silla:{" "}
+                      <span className="font-semibold text-slate-700">
+                        {orden.tipoSilla ? tipoSillaLabel(orden.tipoSilla) : "—"}
+                      </span>
                     </p>
                     <p className="text-sm text-slate-500">
                       Cantidad:{" "}
@@ -307,6 +338,7 @@ const OrdenesCompraTable = ({ ordenes, loading, error, onOrdenUpdated, onVerDeta
                 <tr className="border-b border-slate-200 text-slate-500">
                   <th className="py-2 pr-4">Folio</th>
                   <th className="py-2 pr-4">Modelo</th>
+                  <th className="py-2 pr-4">Tipo de silla</th>
                   <th className="py-2 pr-4">Cantidad</th>
                   <th className="py-2 pr-4">Estado</th>
                   <th className="py-2 pr-4">Monto esperado</th>
@@ -322,6 +354,7 @@ const OrdenesCompraTable = ({ ordenes, loading, error, onOrdenUpdated, onVerDeta
                     {editingId === orden._id ? (
                       <>
                         <td className="py-2 pr-4">{editModeloInput}</td>
+                        <td className="py-2 pr-4">{editTipoSillaSelect}</td>
                         <td className="py-2 pr-4">{editCantidadInput}</td>
                         <td className="py-2 pr-4">{editActivaCheckbox}</td>
                         <td className="py-2 pr-4">{editMontoInput}</td>
@@ -330,6 +363,9 @@ const OrdenesCompraTable = ({ ordenes, loading, error, onOrdenUpdated, onVerDeta
                     ) : (
                       <>
                         <td className="py-2 pr-4 text-slate-600">{orden.modeloSillas}</td>
+                        <td className="py-2 pr-4 text-slate-600">
+                          {orden.tipoSilla ? tipoSillaLabel(orden.tipoSilla) : "—"}
+                        </td>
                         <td className="py-2 pr-4 text-slate-600">{orden.cantidadSillas ?? 0}</td>
                         <td className="py-2 pr-4">{statusBadge(orden.active)}</td>
                         <td className="py-2 pr-4 text-slate-600">

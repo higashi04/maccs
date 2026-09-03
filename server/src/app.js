@@ -13,6 +13,7 @@ import jornaleroActividadesRoutes from './routes/jornaleroActividadesRoutes.js';
 import viaticosRoutes from './routes/viaticosRoutes.js';
 import ordenesCompraRoutes from './routes/ordenesCompraRoutes.js';
 import conceptosViaticoRoutes from './routes/conceptosViaticoRoutes.js';
+import conceptosActividadRoutes from './routes/conceptosActividadRoutes.js';
 
 dotenv.config();
 
@@ -88,6 +89,7 @@ app.use('/api/jornalero-actividades', jornaleroActividadesRoutes);
 app.use('/api/viaticos', viaticosRoutes);
 app.use('/api/ordenes-compra', ordenesCompraRoutes);
 app.use('/api/conceptos-viatico', conceptosViaticoRoutes);
+app.use('/api/conceptos-actividad', conceptosActividadRoutes);
 
 /**
  * Endpoint de salud para verificar que el servidor responde.
