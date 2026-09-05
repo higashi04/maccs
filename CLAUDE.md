@@ -14,3 +14,4 @@
 - ES modules imports is being used, respect the convention
 - each api point and function must have its own JSDoc documentation
 - when a model has a createdBy or updatedBy prop it must take the currently logged in username, preferably from the sent credentials
+- isAdmin permissions are meant only for application changes like adding new modules, not for what the user does in the app. 

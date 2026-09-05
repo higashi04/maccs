@@ -5,12 +5,6 @@ import { faBars, faRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useModules } from "../../context/ModulesContext";
 import { useAuth } from "../../context/AuthContext";
 
-const STATIC_TITLES = {
-  "/modules/create": "Crear módulo",
-  "/users/create": "Crear usuario",
-  "/profiles/create": "Crear perfil",
-};
-
 /**
  * Barra superior con el título de la sección activa, el acceso al menú
  * móvil y las acciones de la sesión del usuario.
@@ -23,8 +17,9 @@ function Topbar({ onMenuClick }) {
   const { user, logout } = useAuth();
 
   const heading = useMemo(() => {
+    if (location.pathname === "/") return "Inicio";
     const activeModule = modules.find((module) => module.ruta === location.pathname);
-    return activeModule?.nombreModulo || STATIC_TITLES[location.pathname] || "MACCS";
+    return activeModule?.nombreModulo || "MACCS";
   }, [modules, location.pathname]);
 
   const handleLogout = async () => {

@@ -14,10 +14,3 @@ export const verifyToken = (req, res, next) => {
     return res.status(401).json({ message: "Token inválido o expirado" });
   }
 };
-
-export const requireAdmin = (req, res, next) => {
-  if (!req.user?.isAdmin) {
-    return res.status(403).json({ message: "Requiere permisos de administrador" });
-  }
-  next();
-};

@@ -1,11 +1,11 @@
 import express from "express";
 import perfilesController from "../controllers/perfilesController.js";
-import { verifyToken, requireAdmin } from "../middleware/authMiddleware.js";
+import { verifyToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/create", verifyToken, requireAdmin, perfilesController.CreatePerfil);
+router.post("/create", verifyToken, perfilesController.CreatePerfil);
 router.get("/read", verifyToken, perfilesController.ReadPerfiles);
-router.put("/update/:id", verifyToken, requireAdmin, perfilesController.UpdatePerfil);
+router.put("/update/:id", verifyToken, perfilesController.UpdatePerfil);
 
 export default router;

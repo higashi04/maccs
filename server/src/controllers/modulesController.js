@@ -1,4 +1,5 @@
 import ModulosModel from "../models/ModulosModel.js";
+import PerfilModel from "../models/PerfilModel.js";
 
 //** Module Controller */
 const modulesController = {
@@ -26,14 +27,24 @@ const modulesController = {
         }
     },
     /**
-     * Obtiene todos los módulos registrados.
-     * @param {import('express').Request} req - request sin parámetros esperados.
+     * Obtiene los módulos disponibles para el usuario autenticado: todos si es administrador,
+     * o solo los asignados a su perfil en caso contrario.
+     * @param {import('express').Request} req - request con el usuario autenticado en req.user (isAdmin, perfil).
      * @param {import('express').Response} res - responde con la lista de módulos (200) o un error (500).
      */
     ReadModules: async(req, res) => {
         try {
-            const modulos = await ModulosModel.find().lean();
-            return res.status(200).json(modulos);
+            if (req.user?.isAdmin) {
+                const modulos = await ModulosModel.find().lean();
+                return res.status(200).json(modulos);
+            }
+
+            if (!req.user?.perfil) {
+                return res.status(200).json([]);
+            }
+
+            const perfil = await PerfilModel.findById(req.user.perfil).populate("modulos").lean();
+            return res.status(200).json(perfil?.modulos || []);
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: "server error" });

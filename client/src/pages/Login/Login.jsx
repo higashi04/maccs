@@ -24,7 +24,7 @@ function Login() {
 
     try {
       await login(formData.email, formData.password);
-      navigate("/modules/create", { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
       setMessage({ type: "error", text: error.message });
     } finally {
