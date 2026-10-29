@@ -3,7 +3,10 @@ import UserModel from "../models/UserModel.js";
 import bycrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
-const RESET_TOKEN_EXPIRES_MS = 60 * 60 * 1000;
+const MIN_PASSWORD_LENGTH = 8;
+const TEMP_PASSWORD_LENGTH = 10;
+// Sin caracteres ambiguos (0/O, 1/l/I) para que sea fácil de dictar o leer.
+const TEMP_PASSWORD_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -14,10 +17,25 @@ const COOKIE_OPTIONS = {
 
 const signToken = (user) =>
   jwt.sign(
-    { id: user._id, username: user.username, isAdmin: user.isAdmin, perfil: user.perfil },
+    {
+      id: user._id,
+      username: user.username,
+      isAdmin: user.isAdmin,
+      perfil: user.perfil,
+      mustChangePassword: Boolean(user.mustChangePassword),
+    },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES || "1d" }
   );
+
+/**
+ * Genera una contraseña temporal aleatoria con generador criptográfico.
+ * @returns {string} contraseña de TEMP_PASSWORD_LENGTH caracteres.
+ */
+const generateTempPassword = () =>
+  Array.from({ length: TEMP_PASSWORD_LENGTH }, () =>
+    TEMP_PASSWORD_ALPHABET[crypto.randomInt(TEMP_PASSWORD_ALPHABET.length)]
+  ).join("");
 
 const authController = {
   CreateUser: async (req, res) => {
@@ -92,27 +110,18 @@ const authController = {
   },
 
   /**
-   * Genera un token de restablecimiento de contraseña y lo registra en consola.
-   * Responde con un mensaje genérico sin revelar si el correo existe, para evitar enumeración de usuarios.
+   * Lista los usuarios del sistema (sin contraseña) con el nombre de su perfil.
+   * @param {import('express').Request} req - request sin parámetros esperados.
+   * @param {import('express').Response} res - responde con el arreglo de usuarios (200) o un error (500).
    */
-  ForgotPassword: async (req, res) => {
+  ListUsers: async (req, res) => {
     try {
-      const { email } = req.body;
-      const user = await UserModel.findOne({ email });
-
-      if (user) {
-        const rawToken = crypto.randomBytes(32).toString("hex");
-        user.resetPasswordToken = crypto.createHash("sha256").update(rawToken).digest("hex");
-        user.resetPasswordExpires = new Date(Date.now() + RESET_TOKEN_EXPIRES_MS);
-        await user.save();
-
-        const resetUrl = `${process.env.CLIENT_URL || "http://localhost:5173"}/reset-password/${rawToken}`;
-        console.log(`Enlace de restablecimiento de contraseña para ${email}: ${resetUrl}`);
-      }
-
-      res.status(200).json({
-        message: "Si el correo está registrado, se generó un enlace de restablecimiento",
-      });
+      const users = await UserModel.find()
+        .select("-password")
+        .populate("perfil", "nombrePerfil")
+        .sort({ username: 1 })
+        .lean();
+      res.status(200).json(users);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "server error" });
@@ -120,29 +129,90 @@ const authController = {
   },
 
   /**
-   * Valida el token de restablecimiento y actualiza la contraseña del usuario.
+   * Restablece la contraseña de otro usuario generando una contraseña temporal. El usuario
+   * deberá cambiarla al iniciar sesión. La contraseña temporal se devuelve una sola vez.
+   * No permite restablecer la propia cuenta ni cuentas administradoras (salvo que quien lo
+   * solicita también sea administrador) para evitar escalamiento de privilegios.
+   * @param {import('express').Request} req - request con :id del usuario objetivo en params.
+   * @param {import('express').Response} res - responde con { username, tempPassword } (200), 400, 403, 404 o 500.
    */
-  ResetPassword: async (req, res) => {
+  AdminResetPassword: async (req, res) => {
     try {
-      const { token, password } = req.body;
-      const hashedToken = crypto.createHash("sha256").update(token || "").digest("hex");
+      const { id } = req.params;
 
-      const user = await UserModel.findOne({
-        resetPasswordToken: hashedToken,
-        resetPasswordExpires: { $gt: new Date() },
-      });
+      if (String(id) === String(req.user.id)) {
+        return res
+          .status(400)
+          .json({ message: "No puedes restablecer tu propia contraseña desde aquí" });
+      }
 
+      const user = await UserModel.findById(id);
       if (!user) {
-        return res.status(400).json({ message: "Token inválido o expirado" });
+        return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+
+      if (user.isAdmin && !req.user.isAdmin) {
+        return res
+          .status(403)
+          .json({ message: "No tienes permiso para restablecer esta cuenta" });
+      }
+
+      const tempPassword = generateTempPassword();
+      const salt = await bycrypt.genSalt(10);
+      user.password = await bycrypt.hash(tempPassword, salt);
+      user.mustChangePassword = true;
+      user.updatedBy = req.user.username;
+      await user.save();
+
+      res.status(200).json({ username: user.username, email: user.email, tempPassword });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "server error" });
+    }
+  },
+
+  /**
+   * Cambia la contraseña del usuario autenticado (flujo obligatorio tras una contraseña temporal).
+   * Valida la contraseña actual, apaga mustChangePassword y renueva la cookie de sesión.
+   * @param {import('express').Request} req - request con { currentPassword, newPassword } en el body.
+   * @param {import('express').Response} res - responde con el usuario actualizado (200), 400, 401 o 500.
+   */
+  ChangePassword: async (req, res) => {
+    try {
+      const { currentPassword, newPassword } = req.body;
+
+      if (typeof newPassword !== "string" || newPassword.length < MIN_PASSWORD_LENGTH) {
+        return res
+          .status(400)
+          .json({ message: `La nueva contraseña debe tener al menos ${MIN_PASSWORD_LENGTH} caracteres` });
+      }
+
+      const user = await UserModel.findById(req.user.id);
+      if (!user) {
+        return res.status(401).json({ message: "No autenticado" });
+      }
+
+      const currentMatches = await bycrypt.compare(currentPassword || "", user.password);
+      if (!currentMatches) {
+        return res.status(401).json({ message: "La contraseña actual es incorrecta" });
+      }
+
+      if (currentPassword === newPassword) {
+        return res
+          .status(400)
+          .json({ message: "La nueva contraseña debe ser diferente a la actual" });
       }
 
       const salt = await bycrypt.genSalt(10);
-      user.password = await bycrypt.hash(password, salt);
-      user.resetPasswordToken = undefined;
-      user.resetPasswordExpires = undefined;
+      user.password = await bycrypt.hash(newPassword, salt);
+      user.mustChangePassword = false;
+      user.updatedBy = req.user.username;
       await user.save();
 
-      res.status(200).json({ message: "Contraseña actualizada correctamente" });
+      res.cookie("token", signToken(user), COOKIE_OPTIONS);
+
+      const { password: _password, ...safeUser } = user.toObject();
+      res.status(200).json(safeUser);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "server error" });

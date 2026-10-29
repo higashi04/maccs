@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faEye, faEyeSlash, faHammer, faLock } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "../../context/AuthContext";
@@ -82,9 +82,9 @@ function Login() {
             </div>
           </label>
 
-          <Link to="/forgot-password" className="self-end text-sm text-sky-600 hover:text-sky-700 font-semibold">
-            ¿Olvidaste tu contraseña?
-          </Link>
+          <p className="text-sm text-slate-500">
+            ¿Olvidaste tu contraseña? Solicita a tu supervisor que la restablezca.
+          </p>
 
           <button
             type="submit"
